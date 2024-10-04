@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Weather Forecast</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      height: 96.5vh;
+      width: 98vw;
+      position: relative;
+      font-family: sans-serif;
+      background-color: black;
+      color: white;
+    }
+    .forecast-container {
+      position: absolute;
+      top: 40px;
+      left: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      list-style: none;
+      padding: 0;
+    }
+    .forecast-item {
+      font-size: 20px;
+      flex: 0 1 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px;
+    }
+    .content {
+      font-size: 20px;
+      text-align: center;
+      position: absolute;
+      bottom: 10px;
+      left: 25%;
+      right: 25%;
+    }
+    .odmik {
+      margin: 0;
+      padding: 0;
+    }
+    .time {
+      margin-top: -70px;
+      font-size: 200px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <h2>Weather Forecast:</h2>
+  <div class="time" id="clock"></div>
+  <ul class="forecast-container">
+      {% for day in forecast %}
+      <li class="forecast-item">
+          <strong>Date:</strong> {{ day.dt_txt }} <br><br>
+          <strong>Temperature:</strong> {{ day.main.temp }} °C <br><br>
+          <strong>Description:</strong> {{ day.weather[0].description }} <br>
+      </li>
+      {% endfor %}
+  </ul>
+  <div class="content">    
+    <h2>News Article:</h2>
+      <div id="news-container"></div>
+  </div>
+
+  <script>
+    async function fetchNewsNew(arc) {
+        try {
+            $.ajax({
+              url: '/get_news',
+              data: {
+                arc: arc
+              },
+              success: function( result ) {  
+                console.log(result);
+                const newsContainer = document.getElementById('news-container');
+                newsContainer.innerHTML = "";
+                const articleDiv = document.createElement('div');
+                articleDiv.innerHTML = `<h3 class='odmik'>${result["title"]}</h3><div>${result["description"]}</div>`;
+                newsContainer.appendChild(articleDiv);
+              }
+            });
+        } catch (error) {
+            console.error('Error fetching news:', error);
+        }
+    }
+
+    function runFunctionsWithInterval() {
+        const parameters = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0];
+        let currentIndex = 0;
+        function executeFunction() {
+            fetchNewsNew(parameters[currentIndex]);
+            currentIndex = (currentIndex + 1) % parameters.length;
+        }
+        const intervalId = setInterval(executeFunction, 20000);
+    }
+    fetchNewsNew(0);
+    runFunctionsWithInterval();
+
+    function updateClock() {
+        $.get("/get_time", function(data) {
+            $("#clock").text(data);
+        });
+    }
+
+    $(document).ready(function() {
+        setInterval(updateClock, 1000);
+    });
+    
+    document.body.addEventListener('keyup', function(event) {
+      if (event.keyCode === 72) {
+        window.location.href = '/';
+      }
+    });
+  </script>
+</body>
+</html>
